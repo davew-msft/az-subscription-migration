@@ -14,6 +14,10 @@ This process is just for "data lake" data and basic block blobs functioning simi
 export DES_SUBSCRIPTION="davew data"
 export RES_GROUP="rgDemoData"
 export LOCATION="eastus2"
+export DES_STORAGE_ACCT="davewdata"
+#export DES_STORAGE_ACCT="davewlake"
+export SRC_STORAGE_ACCT=""
+#export SRC_STORAGE_ACCT=""
 export TEMP_RG="temp"
 export TEMP_VM="tempVM"
 export TEMP_ADM="admin"
@@ -26,11 +30,22 @@ az group create --name $RES_GROUP --location $LOCATION
 ## we need a very small, basic ubuntu vm to run azcopy.  This will be deleted later
 az vm create \
     --name $TEMP_VM \
-    --resource-group $TEMP_RG\
+    --resource-group $TEMP_RG \
     --admin-password $TEMP_PWD \
+    --admin-username $TEMP_ADM \
     --image Debian \
     
 
+
+azcopy copy 'https://<source-storage-account-name>.blob.core.windows.net/' 'https://<destination-storage-account-name>.blob.core.windows.net/' --recursive
+
+--overwrite flag to ifSourceNewer
+
+grep UPLOADFAILED .\04dc9ca9-158f-7945-5933-564021086c79.log
+
+azcopy jobs list
+
+azcopy jobs show <job-id> --with-status=Failed
 
 
 AzCopy /Source:https://sourceaccount.blob.core.windows.net/mycontainer1 
