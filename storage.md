@@ -77,25 +77,53 @@ export SRC_STORAGE_ACCT2="davewdemodata"
 
 export SRC_STORAGE_STRING1="https://$SRC_STORAGE_ACCT1.blob.core.windows.net/"
 export DES_STORAGE_STRING1="https://$DES_STORAGE_ACCT1.blob.core.windows.net/"
+end=`date -u -d "30 days" '+%Y-%m-%dT%H:%MZ'`
 
-# login
+# need to generate acct SAS for the source
 az login --tenant microsoft.onmicrosoft.com
 #az account list -o table
-
-# get the acct keys for the src storage account
 az account set --subscription "$SRC_SUBSCRIPTION"
-
-
 src_key=$(az storage account keys list \
     -n $SRC_STORAGE_ACCT1 \
     --subscription "$SRC_SUBSCRIPTION" \
     -g $RES_GROUP \
     --query '[0].value') 
+src_sas=$(az storage account generate-sas \
+    --expiry $end \
+    --permissions cdlruwap \
+    --resource-types sco \
+    --services bfqt \
+    --account-key $src_key \
+    --account-name $SRC_STORAGE_ACCT1 \
+    -o tsv)
+
+# need to generate acct SAS for the destination
+az login --tenant fdpo.onmicrosoft.com
+#az account list -o table
+az account set --subscription "$DES_SUBSCRIPTION"
+des_key=$(az storage account keys list \
+    -n $DES_STORAGE_ACCT1 \
+    --subscription "$DES_SUBSCRIPTION" \
+    -g $RES_GROUP \
+    --query '[0].value') 
+des_sas=$(az storage account generate-sas \
+    --expiry $end \
+    --permissions cdlruwap \
+    --resource-types sco \
+    --services bfqt \
+    --account-key $des_key \
+    --account-name $DES_STORAGE_ACCT1 \
+    -o tsv)
+
+
+
+
+
 
 azcopy copy \
     $SRC_STORAGE_STRING1 \
     $DES_STORAGE_STRING1 \
-    
+
     --recursive \
     --overwrite ifSourceNewer 
 
