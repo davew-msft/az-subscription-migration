@@ -11,14 +11,10 @@ This process is just for "data lake" data and basic block blobs functioning simi
 # change vars as needed
 # this block needs to be rerun if cloudshell times out
 # run `watch ls` in cloudshell to avoid the timeout and ctl+c to abort it
+# there are more vars to be changed below
 export DES_SUBSCRIPTION="davew-data"
 export RES_GROUP="rgDemoData"
 export LOCATION="eastus2"
-# I'm migrating two storage accounts
-export DES_STORAGE_ACCT1="davewdata"
-export DES_STORAGE_ACCT2="davewlake"
-export SRC_STORAGE_ACCT1="davewdemoblobs"
-export SRC_STORAGE_ACCT2="davewdemodata"
 
 export TEMP_RG="temp"
 export TEMP_VM="tempVM"
@@ -46,21 +42,62 @@ az vm create \
 export IP="20.88.112.169"
 
 ssh $TEMP_ADM@$IP
+
+
+```
+
+Run these within the VM
+
+```bash 
+
 # if you get disconnected, screen will allow you to reconnect by running screen -r and everything will continue
 # running in the bg
+# screen -r
+# screen -ls
 screen 
 
+# one-time installation of az and azcopy
+curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 wget https://aka.ms/downloadazcopy-v10-linux
 tar -xvf downloadazcopy-v10-linux
 sudo rm /usr/bin/azcopy
 sudo cp ./azcopy_linux_amd64_*/azcopy /usr/bin/
 sudo chmod +x /usr/bin/azcopy
 
+# vars to change
+export DES_SUBSCRIPTION="davew-data"
+export SRC_SUBSCRIPTION="davew demo"
+export RES_GROUP="rgDemoData"
+export LOCATION="eastus2"
+# I'm migrating two storage accounts
+export DES_STORAGE_ACCT1="davewdata"
+export DES_STORAGE_ACCT2="davewlake"
+export SRC_STORAGE_ACCT1="davewdemoblobs"
+export SRC_STORAGE_ACCT2="davewdemodata"
+
+export SRC_STORAGE_STRING1="https://$SRC_STORAGE_ACCT1.blob.core.windows.net/"
+export DES_STORAGE_STRING1="https://$DES_STORAGE_ACCT1.blob.core.windows.net/"
+
+# login
+az login --tenant microsoft.onmicrosoft.com
+#az account list -o table
+
+# get the acct keys for the src storage account
+az account set --subscription "$SRC_SUBSCRIPTION"
+
+
+src_key=$(az storage account keys list \
+    -n $SRC_STORAGE_ACCT1 \
+    --subscription "$SRC_SUBSCRIPTION" \
+    -g $RES_GROUP \
+    --query '[0].value') 
+
 azcopy copy \
-    'https://<source-storage-account-name>.blob.core.windows.net/' \
-    'https://<destination-storage-account-name>.blob.core.windows.net/' \
+    $SRC_STORAGE_STRING1 \
+    $DES_STORAGE_STRING1 \
+    
     --recursive \
-    --overwrite ifSourceNewer
+    --overwrite ifSourceNewer 
 
 
 grep UPLOADFAILED .\04dc9ca9-158f-7945-5933-564021086c79.log
