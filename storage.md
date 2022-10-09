@@ -116,7 +116,7 @@ des_sas=$(az storage account generate-sas \
     -o tsv)
 
 read -sp "Azure password: " AZ_PASS && echo && az login -u <username> -p $AZ_PASS
-
+storage_account_key = str(key[0][1:-1]) # this is used to strip opening and closing quotation marks
 
 
 
