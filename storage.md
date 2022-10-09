@@ -115,7 +115,7 @@ des_sas=$(az storage account generate-sas \
     --account-name $DES_STORAGE_ACCT1 \
     -o tsv)
 
-
+read -sp "Azure password: " AZ_PASS && echo && az login -u <username> -p $AZ_PASS
 
 
 
