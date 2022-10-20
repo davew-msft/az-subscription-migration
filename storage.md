@@ -12,7 +12,7 @@ This process is just for "data lake" data and basic block blobs functioning simi
 # this block needs to be rerun if cloudshell times out
 # run `watch ls` in cloudshell to avoid the timeout and ctl+c to abort it
 # there are more vars to be changed below
-export DES_SUBSCRIPTION="davew-data"
+export DES_SUBSCRIPTION="davew-compute"
 export RES_GROUP="rgDemoData"
 export LOCATION="eastus2"
 
@@ -39,7 +39,7 @@ az vm create \
     --size Standard_DS1
 
 # copy the poublicIpAddress from the json and change this var
-export IP="20.88.112.169"
+export IP="20.22.213.6"
 
 ssh $TEMP_ADM@$IP
 
@@ -65,12 +65,12 @@ sudo cp ./azcopy_linux_amd64_*/azcopy /usr/bin/
 sudo chmod +x /usr/bin/azcopy
 
 # vars to change
-export DES_SUBSCRIPTION="davew-data"
+export DES_SUBSCRIPTION="davew-compute"
 export SRC_SUBSCRIPTION="davew demo"
 export RES_GROUP="rgDemoData"
 export LOCATION="eastus2"
 # I'm migrating two storage accounts
-export DES_STORAGE_ACCT1="davewdata"
+export DES_STORAGE_ACCT1="davewblob"
 export DES_STORAGE_ACCT2="davewlake"
 export SRC_STORAGE_ACCT1="davewdemoblobs"
 export SRC_STORAGE_ACCT2="davewdemodata"
@@ -79,9 +79,24 @@ export SRC_STORAGE_STRING1="https://$SRC_STORAGE_ACCT1.blob.core.windows.net/"
 export DES_STORAGE_STRING1="https://$DES_STORAGE_ACCT1.blob.core.windows.net/"
 end=`date -u -d "30 days" '+%Y-%m-%dT%H:%MZ'`
 
-# need to generate acct SAS for the source
-az login --tenant microsoft.onmicrosoft.com
+az login 
 #az account list -o table
+
+# build the destination storage accounts
+az account set --subscription "$DES_SUBSCRIPTION"
+az storage account create \
+    --name $DES_STORAGE_ACCT1 \
+    --resource-group $RES_GROUP \
+    --access-tier Premium \
+    --enable-hierarchical-namespace true \
+    --kind StorageV2 \
+    --https-only true \
+    --location $LOCATION \
+    --public-network-access Enabled
+
+    
+
+# need to generate acct SAS for the source
 az account set --subscription "$SRC_SUBSCRIPTION"
 src_key=$(az storage account keys list \
     -n $SRC_STORAGE_ACCT1 \
@@ -98,8 +113,6 @@ src_sas=$(az storage account generate-sas \
     -o tsv)
 
 # need to generate acct SAS for the destination
-az login --tenant fdpo.onmicrosoft.com
-#az account list -o table
 az account set --subscription "$DES_SUBSCRIPTION"
 des_key=$(az storage account keys list \
     -n $DES_STORAGE_ACCT1 \
