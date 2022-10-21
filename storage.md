@@ -71,7 +71,7 @@ export RES_GROUP="rgDemoData"
 export LOCATION="eastus2"
 # I'm migrating two storage accounts
 export DES_STORAGE_ACCT1="davewblob"
-export DES_STORAGE_ACCT2="davewlake"
+export DES_STORAGE_ACCT2="davewdatalake"
 export SRC_STORAGE_ACCT1="davewdemoblobs"
 export SRC_STORAGE_ACCT2="davewdemodata"
 
@@ -84,6 +84,7 @@ az login
 
 # build the destination storage accounts
 az account set --subscription "$DES_SUBSCRIPTION"
+# my first lake
 az storage account create \
     --name $DES_STORAGE_ACCT1 \
     --resource-group $RES_GROUP \
@@ -94,6 +95,16 @@ az storage account create \
     --location $LOCATION \
     --public-network-access Enabled
 
+# second lake
+az storage account create \
+    --name $DES_STORAGE_ACCT2 \
+    --resource-group $RES_GROUP \
+    --access-tier Premium \
+    --enable-hierarchical-namespace true \
+    --kind StorageV2 \
+    --https-only true \
+    --location $LOCATION \
+    --public-network-access Enabled
     
 
 # need to generate acct SAS for the source
@@ -128,16 +139,15 @@ des_sas=$(az storage account generate-sas \
     --account-name $DES_STORAGE_ACCT1 \
     -o tsv)
 
-read -sp "Azure password: " AZ_PASS && echo && az login -u <username> -p $AZ_PASS
-storage_account_key = str(key[0][1:-1]) # this is used to strip opening and closing quotation marks
+# storage_account_key = str(key[0][1:-1]) # this is used to strip opening and closing quotation marks
 
 
-
+https://learn.microsoft.com/en-us/azure/storage/common/storage-ref-azcopy-sync?toc=%2Fazure%2Fstorage%2Fblobs%2Ftoc.json
 azcopy copy \
-    $SRC_STORAGE_STRING1 \
-    $DES_STORAGE_STRING1 \
+    /Source:$SRC_STORAGE_STRING1 \
+    /Dest:$DES_STORAGE_STRING1 \
 
-    --recursive \
+    --recursive=true \
     --overwrite ifSourceNewer 
 
 
