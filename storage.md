@@ -75,8 +75,8 @@ export DES_STORAGE_ACCT2="davewdatalake"
 export SRC_STORAGE_ACCT1="davewdemoblobs"
 export SRC_STORAGE_ACCT2="davewdemodata"
 
-export SRC_STORAGE_STRING1="https://$SRC_STORAGE_ACCT1.blob.core.windows.net/"
-export DES_STORAGE_STRING1="https://$DES_STORAGE_ACCT1.blob.core.windows.net/"
+export SRC_STORAGE_STRING1="https://$SRC_STORAGE_ACCT1.blob.core.windows.net"
+export DES_STORAGE_STRING1="https://$DES_STORAGE_ACCT1.blob.core.windows.net"
 end=`date -u -d "30 days" '+%Y-%m-%dT%H:%MZ'`
 
 az login 
@@ -139,7 +139,30 @@ des_sas=$(az storage account generate-sas \
     --account-name $DES_STORAGE_ACCT1 \
     -o tsv)
 
+azcopy copy \
+    "'$SRC_STORAGE_STRING1/'" \
+    "'$DES_STORAGE_STRING1' " \
+    --from-to BlobBlob \
+    --recursive
+
+export AZCOPY_AUTO_LOGIN_TYPE=DEVICE
+azcopy login
+azcopy copy \
+    'https://davewdemoblobs.blob.core.windows.net/?se=2022-11-18T19%3A47Z&sp=rwdlacup&sv=2021-06-08&ss=tqbf&srt=sco&sig=iV%2BBbb7VBgIcQEuQ09uD6j9C18JMWQbfkIwXOJ4adrM%3D' \
+    'https://davewblob.blob.core.windows.net?se=2022-11-18T19%3A47Z&sp=rwdlacup&sv=2021-06-08&ss=tqbf&srt=sco&sig=iV%2BBbb7VBgIcQEuQ09uD6j9C18JMWQbfkIwXOJ4adrM%3D' \
+    --from-to BlobBlob \
+    --recursive  
+
+
 # storage_account_key = str(key[0][1:-1]) # this is used to strip opening and closing quotation marks
+
+# need to get your tenantid
+azcopy login --tenant-id e18c8112-3b45-4810-908f-163d21953506
+
+azcopy copy \
+    'https://<source-storage-account-name>.blob.core.windows.net/<SAS-token>' \
+    'https://<destination-storage-account-name>.blob.core.windows.net/' 
+    --recursive
 
 
 https://learn.microsoft.com/en-us/azure/storage/common/storage-ref-azcopy-sync?toc=%2Fazure%2Fstorage%2Fblobs%2Ftoc.json
