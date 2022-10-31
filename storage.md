@@ -145,14 +145,22 @@ azcopy copy \
     --from-to BlobBlob \
     --recursive
 
+# solves the login issue with azcopy
+sudo apt install keyutils
+keyctl session
+
 export AZCOPY_AUTO_LOGIN_TYPE=DEVICE
 export DEST_TENANT_ID="e18c8112-3b45-4810-908f-163d21953506"
 azcopy login --tenant-id $DEST_TENANT_ID 
+azcopy list https://davewdemoblobs.blob.core.windows.net
+azcopy list https://davewblob.blob.core.windows.net
+
 azcopy copy \
     'https://davewdemoblobs.blob.core.windows.net/?se=2022-11-18T19%3A47Z&sp=rwdlacup&sv=2021-06-08&ss=tqbf&srt=sco&sig=iV%2BBbb7VBgIcQEuQ09uD6j9C18JMWQbfkIwXOJ4adrM%3D' \
     'https://davewblob.blob.core.windows.net?se=2022-11-18T19%3A47Z&sp=rwdlacup&sv=2021-06-08&ss=tqbf&srt=sco&sig=iV%2BBbb7VBgIcQEuQ09uD6j9C18JMWQbfkIwXOJ4adrM%3D' \
     --from-to BlobBlob \
     --recursive  
+https://github.com/Azure/azure-storage-azcopy/wiki/Improved-login-support-for-AzCopy-commands-(with-in-memory-secret-store)
 
 azcopy copy \
     'https://davewdemoblobs.blob.core.windows.net/?se=2022-11-18T19%3A47Z&sp=rwdlacup&sv=2021-06-08&ss=tqbf&srt=sco&sig=iV%2BBbb7VBgIcQEuQ09uD6j9C18JMWQbfkIwXOJ4adrM%3D' \
@@ -162,6 +170,10 @@ azcopy copy \
 
 
 # storage_account_key = str(key[0][1:-1]) # this is used to strip opening and closing quotation marks
+
+#another solution
+https://github.com/J0hnniemac/yt-blobsync/blob/master/blobsync.sh
+
 
 # need to get your tenantid
 azcopy login --tenant-id e18c8112-3b45-4810-908f-163d21953506
