@@ -146,10 +146,17 @@ azcopy copy \
     --recursive
 
 export AZCOPY_AUTO_LOGIN_TYPE=DEVICE
-azcopy login
+export DEST_TENANT_ID="e18c8112-3b45-4810-908f-163d21953506"
+azcopy login --tenant-id $DEST_TENANT_ID 
 azcopy copy \
     'https://davewdemoblobs.blob.core.windows.net/?se=2022-11-18T19%3A47Z&sp=rwdlacup&sv=2021-06-08&ss=tqbf&srt=sco&sig=iV%2BBbb7VBgIcQEuQ09uD6j9C18JMWQbfkIwXOJ4adrM%3D' \
     'https://davewblob.blob.core.windows.net?se=2022-11-18T19%3A47Z&sp=rwdlacup&sv=2021-06-08&ss=tqbf&srt=sco&sig=iV%2BBbb7VBgIcQEuQ09uD6j9C18JMWQbfkIwXOJ4adrM%3D' \
+    --from-to BlobBlob \
+    --recursive  
+
+azcopy copy \
+    'https://davewdemoblobs.blob.core.windows.net/?se=2022-11-18T19%3A47Z&sp=rwdlacup&sv=2021-06-08&ss=tqbf&srt=sco&sig=iV%2BBbb7VBgIcQEuQ09uD6j9C18JMWQbfkIwXOJ4adrM%3D' \
+    'https://davewblob.blob.core.windows.net' \
     --from-to BlobBlob \
     --recursive  
 
