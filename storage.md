@@ -151,8 +151,9 @@ keyctl session
 
 export AZCOPY_AUTO_LOGIN_TYPE=DEVICE
 export DEST_TENANT_ID="e18c8112-3b45-4810-908f-163d21953506"
-azcopy login --tenant-id $DEST_TENANT_ID 
+azcopy login
 azcopy list https://davewdemoblobs.blob.core.windows.net
+azcopy login --tenant-id $DEST_TENANT_ID 
 azcopy list https://davewblob.blob.core.windows.net
 
 azcopy copy \
@@ -173,6 +174,61 @@ azcopy copy \
 
 #another solution
 https://github.com/J0hnniemac/yt-blobsync/blob/master/blobsync.sh
+
+## alt solution begin
+# login to msft tenant
+az account set --subscription "$SRC_SUBSCRIPTION"
+az storage container list \
+    --auth-mode login \
+    --account-name $SRC_STORAGE_ACCT1 \
+    -o table \
+    | awk 'NR>1 {print $1}' > src.txt
+
+az account set --subscription "$DES_SUBSCRIPTION"
+for blob_container in $(cat src.txt);
+        do
+        echo $blob_container to $DES_STORAGE_ACCT1;
+        newcmd="az storage container create --auth-mode login --account-name $DES_STORAGE_ACCT1 -n $blob_container --fail-on-exist" 
+        echo "---------------------------------"
+        echo $newcmd
+        eval $newcmd
+done
+
+azcopy sync "
+
+echo "performing AZCOPY sync for each container"
+for blob_container in $(cat src.txt);
+   do
+    #Create timestame + 30 Minutes for SAS token
+    end=`date -u -d "30 minutes" '+%Y-%m-%dT%H:%MZ'`
+    sourcesas=`az storage container generate-sas --account-name $sourceaccount --as-user --auth-mode login --name $blob_container --expiry $end --permissions acdlrw`
+    echo $sourcesas
+    # remove leading and trailing quotes from SAS Token
+    sourcesas=$(eval echo $sourcesas)
+    echo $sourcesas
+    src="$sourceurl/$blob_container?$sourcesas"
+    dst="$destinationurl/$blob_container"
+    echo $src
+    echo $dst
+    synccmd="azcopy copy \"$src\" \"$dst\" --recursive"
+    echo $synccmd
+    eval $synccmd
+
+    # my ver
+    cat src.txt
+    blob_container=adbwkshop
+    azcopy login --tenant-id $DEST_TENANT_ID 
+    src="$SRC_STORAGE_STRING1/$blob_container?$src_sas"
+    dst="$DES_STORAGE_STRING1/$blob_conainer"
+    echo $src
+    echo $dst
+    synccmd="azcopy sync \"$src\" \"$dst\" --recursive --delete-destination=true"
+    echo $synccmd
+    eval $synccmd
+
+done
+
+## alter solution end
 
 
 # need to get your tenantid
