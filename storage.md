@@ -194,7 +194,7 @@ for blob_container in $(cat src.txt);
         eval $newcmd
 done
 
-azcopy sync "
+azcopy sync 
 
 echo "performing AZCOPY sync for each container"
 for blob_container in $(cat src.txt);
@@ -229,6 +229,9 @@ for blob_container in $(cat src.txt);
 done
 
 ## alter solution end
+
+
+
 
 
 # need to get your tenantid
